@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Forms Repository{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Forms Repository</h2>
+    <p class="text-muted mb-0">Access downloadable academic and administrative forms.</p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+{% if user.role == "admin" %}
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Upload New Form</h5>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">File</label>
+                {{ form.file }}
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="col-12">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label">Active</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Upload Form</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Available Forms</h5>
+
+    <div class="row g-4">
+        {% for item in forms %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card access-card">
+                <div class="card-body">
+                    <div class="access-card-title">{{ item.title }}</div>
+                    <p class="access-card-text">{{ item.description }}</p>
+                    <p class="small text-muted mb-2">Category: {{ item.get_category_display }}</p>
+
+                    {% if item.file %}
+                        <a href="{{ item.file.url }}" target="_blank" class="btn btn-primary btn-sm">
+                            Open / Download
+                        </a>
+                    {% else %}
+                        <span class="text-muted">No file attached</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted mb-0">No forms available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

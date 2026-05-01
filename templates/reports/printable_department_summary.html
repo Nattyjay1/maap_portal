@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Printable Department Summary{% endblock %}
+
+{% block content %}
+<div class="no-print mb-3">
+    <button onclick="window.print()" class="btn btn-primary">Print Report</button>
+    <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Back to Reports</a>
+</div>
+
+<div class="section-box printable-report">
+    <div class="text-center mb-4">
+        <h4 class="fw-bold">Department Summary Report</h4>
+        <p class="mb-1">Unified Access Portal Management Information System for Maritime Academy of Asia and the Pacific</p>
+    </div>
+
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Students Served</th>
+                <th>Faculty</th>
+                <th>Grade Records</th>
+                <th>Avg Grade</th>
+                <th>Avg Attendance</th>
+                <th>Passed</th>
+                <th>Failed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary_rows %}
+            <tr>
+                <td>{{ row.department.code }} - {{ row.department.name }}</td>
+                <td>{{ row.student_count }}</td>
+                <td>{{ row.faculty_count }}</td>
+                <td>{{ row.total_grade_records }}</td>
+                <td>{% if row.avg_grade %}{{ row.avg_grade|floatformat:2 }}{% else %}-{% endif %}</td>
+                <td>{% if row.avg_attendance %}{{ row.avg_attendance|floatformat:2 }}%{% else %}-{% endif %}</td>
+                <td>{{ row.pass_count }}</td>
+                <td>{{ row.fail_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center text-muted">No department records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-5 row">
+        <div class="col-6 text-center">
+            <p>Prepared by:</p>
+            <br>
+            <p class="border-top pt-2">System Administrator</p>
+        </div>
+        <div class="col-6 text-center">
+            <p>Reviewed by:</p>
+            <br>
+            <p class="border-top pt-2">Dean / Department Head</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+Fundamentals of Navigation - Week 1 Module
+
+Introductory learning material for basic navigation concepts.
+
+Demo lesson material for prototype presentation.

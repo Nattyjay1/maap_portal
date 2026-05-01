@@ -1,0 +1,265 @@
+body {
+    background-color: #f4f7fb;
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.portal-navbar {
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+}
+
+.portal-wrapper {
+    display: flex;
+    min-height: calc(100vh - 56px);
+}
+
+.portal-sidebar {
+    width: 240px;
+    background-color: #1f2a44;
+    color: #ffffff;
+    padding: 20px 15px;
+    flex-shrink: 0;
+}
+
+.sidebar-heading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.sidebar-link {
+    display: block;
+    color: #d9e2f2;
+    text-decoration: none;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    transition: 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.portal-content {
+    flex-grow: 1;
+    padding: 24px;
+}
+
+.page-header {
+    margin-bottom: 24px;
+}
+
+.portal-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.portal-stat-card {
+    border: none;
+    border-radius: 16px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    height: 100%;
+}
+
+.portal-stat-card h6 {
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.portal-stat-card h3 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.access-card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.access-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.10);
+}
+
+.access-card .card-body {
+    padding: 24px;
+}
+
+.access-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.access-card-text {
+    color: #6c757d;
+    min-height: 60px;
+}
+
+.section-box {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.quick-badge {
+    display: inline-block;
+    background-color: #e9f2ff;
+    color: #0d6efd;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+
+.printable-report {
+    background: #ffffff;
+}
+
+@media print {
+    .portal-navbar,
+    .portal-sidebar,
+    .no-print {
+        display: none !important;
+    }
+
+    .portal-wrapper {
+        display: block !important;
+    }
+
+    .portal-content {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .section-box,
+    .portal-stat-card,
+    .access-card {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        font-size: 12px;
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    .printable-report {
+        padding: 0 !important;
+    }
+}
+
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.45em 0.7em;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn {
+    border-radius: 10px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+.page-header h2 {
+    letter-spacing: -0.3px;
+}
+
+.section-box {
+    margin-bottom: 4px;
+}
+
+.portal-stat-card h3 {
+    font-size: 1.8rem;
+}
+
+@media screen and (max-width: 768px) {
+    .portal-wrapper {
+        flex-direction: column;
+    }
+
+    .portal-sidebar {
+        width: 100%;
+    }
+
+    .portal-content {
+        padding: 16px;
+    }
+}
+
+
+.sidebar-toggle {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sidebar-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.sidebar-toggle.active {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.sidebar-arrow {
+    float: right;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.sidebar-submenu {
+    margin-left: 12px;
+    margin-bottom: 8px;
+    border-left: 2px solid rgba(255, 255, 255, 0.18);
+    padding-left: 10px;
+}
+
+.sidebar-sublink {
+    display: block;
+    color: #d9e2f2;
+    text-decoration: none;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    transition: 0.2s ease;
+}
+
+.sidebar-sublink:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}

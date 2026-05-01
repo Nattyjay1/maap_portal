@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Encode Grades{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Encode Grades</h2>
+    <p class="text-muted mb-0">
+        {{ class_section.subject.code }} - {{ class_section.subject.title }} |
+        {{ class_section.section_name }} |
+        {{ class_section.term }} {{ class_section.school_year }}
+    </p>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'enrolled-student-list' class_section.id %}" class="btn btn-outline-secondary btn-sm">
+        Back to Enrolled Students
+    </a>
+</div>
+
+<div class="section-box">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Student Number</th>
+                        <th>Student Name</th>
+                        <th>Quiz (30%)</th>
+                        <th>Activity (20%)</th>
+                        <th>Exam (30%)</th>
+                        <th>Lab (10%)</th>
+                        <th>Attendance (10%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.enrollment.student.student_number }}</td>
+                        <td>{{ row.enrollment.student.user.get_full_name }}</td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="quiz_total_{{ row.enrollment.id }}"
+                                   class="form-control"
+                                   value="{% if row.grade %}{{ row.grade.quiz_total }}{% else %}0{% endif %}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="activity_total_{{ row.enrollment.id }}"
+                                   class="form-control"
+                                   value="{% if row.grade %}{{ row.grade.activity_total }}{% else %}0{% endif %}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="exam_total_{{ row.enrollment.id }}"
+                                   class="form-control"
+                                   value="{% if row.grade %}{{ row.grade.exam_total }}{% else %}0{% endif %}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="lab_total_{{ row.enrollment.id }}"
+                                   class="form-control"
+                                   value="{% if row.grade %}{{ row.grade.lab_total }}{% else %}0{% endif %}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="attendance_score_{{ row.enrollment.id }}"
+                                   class="form-control"
+                                   value="{% if row.grade %}{{ row.grade.attendance_score }}{% else %}0{% endif %}">
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No enrolled students found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Save All Grades</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

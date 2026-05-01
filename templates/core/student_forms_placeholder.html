@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Student Forms{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Student Forms</h2>
+    <p class="text-muted mb-0">Available academic and certification-related forms.</p>
+</div>
+
+<div class="row g-4">
+    {% for form in forms %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">{{ form.title }}</div>
+                <p class="access-card-text">{{ form.description }}</p>
+                <a href="#" class="btn btn-primary btn-sm">Open Form</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="section-box">
+            <p class="text-muted mb-0">No forms available.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

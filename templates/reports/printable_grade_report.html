@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Printable Grade Report{% endblock %}
+
+{% block content %}
+<div class="no-print mb-3">
+    <button onclick="window.print()" class="btn btn-primary">Print Report</button>
+    <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Back to Reports</a>
+</div>
+
+<div class="section-box printable-report">
+    <div class="text-center mb-4">
+        <h4 class="fw-bold">Class Grade Report</h4>
+        <p class="mb-1">Unified Access Portal Management Information System for Maritime Academy of Asia and the Pacific</p>
+        <p class="mb-0">{{ class_section.term }} | {{ class_section.school_year }}</p>
+    </div>
+
+    <div class="mb-4">
+        <p class="mb-1"><strong>Subject:</strong> {{ class_section.subject.code }} - {{ class_section.subject.title }}</p>
+        <p class="mb-1"><strong>Section:</strong> {{ class_section.section_name }}</p>
+        <p class="mb-1"><strong>Faculty:</strong> {{ class_section.faculty.user.get_full_name }}</p>
+        <p class="mb-1"><strong>Average Grade:</strong>
+            {% if average_grade %}{{ average_grade|floatformat:2 }}{% else %}No data{% endif %}
+        </p>
+        <p class="mb-1"><strong>Passed:</strong> {{ passed_count }} | <strong>Failed:</strong> {{ failed_count }}</p>
+    </div>
+
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Student No.</th>
+                <th>Name</th>
+                <th>Quiz</th>
+                <th>Activity</th>
+                <th>Exam</th>
+                <th>Lab</th>
+                <th>Attendance Score</th>
+                <th>Final Grade</th>
+                <th>Remarks</th>
+                <th>Attendance %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.enrollment.student.student_number }}</td>
+                <td>{{ row.enrollment.student.user.get_full_name }}</td>
+
+                {% if row.grade %}
+                    <td>{{ row.grade.quiz_total }}</td>
+                    <td>{{ row.grade.activity_total }}</td>
+                    <td>{{ row.grade.exam_total }}</td>
+                    <td>{{ row.grade.lab_total }}</td>
+                    <td>{{ row.grade.attendance_score }}</td>
+                    <td>{{ row.grade.final_grade }}</td>
+                    <td>{{ row.grade.remarks }}</td>
+                {% else %}
+                    <td colspan="7" class="text-muted">No grade encoded</td>
+                {% endif %}
+
+                <td>
+                    {% if row.attendance %}
+                        {{ row.attendance.attendance_percent }}%
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center text-muted">No enrolled students found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-5 row">
+        <div class="col-6 text-center">
+            <p>Prepared by:</p>
+            <br>
+            <p class="border-top pt-2">Faculty / Encoder</p>
+        </div>
+        <div class="col-6 text-center">
+            <p>Reviewed by:</p>
+            <br>
+            <p class="border-top pt-2">Department Head / Dean</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

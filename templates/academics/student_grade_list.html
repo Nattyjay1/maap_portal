@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Grades{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">My Grades</h2>
+    <p class="text-muted mb-0">Subject grades and academic status.</p>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-2">Grade Analytics</h5>
+    <p class="mb-0">
+        <strong>Average Grade:</strong>
+        {% if average_grade %}
+            {{ average_grade|floatformat:2 }}
+        {% else %}
+            No grade data yet
+        {% endif %}
+    </p>
+</div>
+
+<div class="section-box">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Quiz</th>
+                    <th>Activity</th>
+                    <th>Exam</th>
+                    <th>Lab</th>
+                    <th>Attendance Score</th>
+                    <th>Final Grade</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.enrollment.class_section.subject.code }} - {{ row.enrollment.class_section.subject.title }}</td>
+                    <td>{{ row.enrollment.class_section.section_name }}</td>
+
+                    {% if row.grade %}
+                        <td>{{ row.grade.quiz_total }}</td>
+                        <td>{{ row.grade.activity_total }}</td>
+                        <td>{{ row.grade.exam_total }}</td>
+                        <td>{{ row.grade.lab_total }}</td>
+                        <td>{{ row.grade.attendance_score }}</td>
+                        <td>{{ row.grade.final_grade }}</td>
+                        <td>{{ row.grade.remarks }}</td>
+                    {% else %}
+                        <td colspan="7" class="text-muted">Grade not yet encoded</td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted">No enrolled subjects found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

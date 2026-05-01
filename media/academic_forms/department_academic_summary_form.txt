@@ -1,0 +1,5 @@
+Department Academic Summary Form
+
+Used by administrators for department-level academic monitoring.
+
+This is a demo form file for the prototype system.

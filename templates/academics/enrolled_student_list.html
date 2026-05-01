@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Enrolled Students{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Enrolled Students</h2>
+    <p class="text-muted mb-0">
+        {{ class_section.subject.code }} - {{ class_section.subject.title }} |
+        {{ class_section.section_name }} |
+        {{ class_section.term }} {{ class_section.school_year }}
+    </p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="mb-3 d-flex gap-2">
+    <a href="{% url 'faculty-class-list' %}" class="btn btn-outline-secondary btn-sm">
+        Back to My Classes
+    </a>
+    <a href="{% url 'class-grade-entry' class_section.id %}" class="btn btn-primary btn-sm">
+        Encode Grades
+    </a>
+    <a href="{% url 'class-attendance-entry' class_section.id %}" class="btn btn-warning btn-sm">
+        Encode Attendance
+    </a>
+</div>
+
+<div class="section-box">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Student Name</th>
+                    <th>Year</th>
+                    <th>Section</th>
+                    <th>Attendance %</th>
+                    <th>Attendance Status</th>
+                    <th>Final Grade</th>
+                    <th>Remarks</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.enrollment.student.student_number }}</td>
+                    <td>{{ row.enrollment.student.user.get_full_name }}</td>
+                    <td>{{ row.enrollment.student.year_level }}</td>
+                    <td>{{ row.enrollment.student.section }}</td>
+
+                    <td>
+                        {% if row.attendance %}
+                            {{ row.attendance.attendance_percent }}%
+                        {% else %}
+                            <span class="text-muted">Not yet encoded</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.attendance %}
+                            {{ row.attendance.status }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if row.grade %}
+                            {{ row.grade.final_grade }}
+                        {% else %}
+                            <span class="text-muted">Not yet encoded</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.grade %}
+                            {{ row.grade.remarks }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.grade %}
+                            <a href="{% url 'grade-entry' row.enrollment.id %}" class="btn btn-primary btn-sm">
+                                Edit Grade
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Use Encode Grades</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted">No enrolled students found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

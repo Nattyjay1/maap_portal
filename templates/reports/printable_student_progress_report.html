@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Printable Student Progress Report{% endblock %}
+
+{% block content %}
+<div class="no-print mb-3">
+    <button onclick="window.print()" class="btn btn-primary">Print Report</button>
+    <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Back to Reports</a>
+</div>
+
+<div class="section-box printable-report">
+    <div class="text-center mb-4">
+        <h4 class="fw-bold">Student Progress Report</h4>
+        <p class="mb-1">Unified Access Portal Management Information System for Maritime Academy of Asia and the Pacific</p>
+    </div>
+
+    <div class="mb-4">
+        <p class="mb-1"><strong>Student Number:</strong> {{ student_profile.student_number }}</p>
+        <p class="mb-1"><strong>Name:</strong> {{ student_profile.user.get_full_name }}</p>
+        <p class="mb-1"><strong>Department:</strong> {{ student_profile.department.code }}</p>
+        <p class="mb-1"><strong>Year / Section:</strong> {{ student_profile.year_level }} - {{ student_profile.section }}</p>
+        <p class="mb-1"><strong>Average Grade:</strong>
+            {% if average_grade %}{{ average_grade|floatformat:2 }}{% else %}No data{% endif %}
+        </p>
+        <p class="mb-1"><strong>Average Attendance:</strong>
+            {% if average_attendance %}{{ average_attendance|floatformat:2 }}%{% else %}No data{% endif %}
+        </p>
+    </div>
+
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Section</th>
+                <th>Final Grade</th>
+                <th>Remarks</th>
+                <th>Attendance %</th>
+                <th>Attendance Status</th>
+                <th>Risk</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.enrollment.class_section.subject.code }} - {{ row.enrollment.class_section.subject.title }}</td>
+                <td>{{ row.enrollment.class_section.section_name }}</td>
+                <td>{% if row.grade %}{{ row.grade.final_grade }}{% else %}-{% endif %}</td>
+                <td>{% if row.grade %}{{ row.grade.remarks }}{% else %}-{% endif %}</td>
+                <td>{% if row.attendance %}{{ row.attendance.attendance_percent }}%{% else %}-{% endif %}</td>
+                <td>{% if row.attendance %}{{ row.attendance.status }}{% else %}-{% endif %}</td>
+                <td>{{ row.risk }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">No academic records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-5 text-center">
+        <p class="text-muted">This report is generated from the prototype academic monitoring database.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Lesson / Materials{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Lesson / Materials</h2>
+    <p class="text-muted mb-0">
+        Access uploaded instructional materials, learning modules, references, and class resources.
+    </p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+{% if can_upload %}
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Upload Lesson / Material</h5>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Material Type</label>
+                {{ form.material_type }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Visibility</label>
+                {{ form.visibility }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Subject</label>
+                {{ form.subject }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Class Section</label>
+                {{ form.class_section }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Upload File</label>
+                {{ form.file }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">External Link</label>
+                {{ form.external_link }}
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="col-12">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label">Active</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">
+            Upload Material
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<div class="section-box mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Search Material</label>
+            <input type="text"
+                   name="q"
+                   class="form-control"
+                   value="{{ selected_keyword }}"
+                   placeholder="Search by title">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Filter by Type</label>
+            <select name="type" class="form-control">
+                <option value="">All Types</option>
+                {% for value, label in material_type_choices %}
+                    <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a href="{% url 'lesson-materials' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Available Lesson / Materials</h5>
+
+    <div class="row g-4">
+        {% for item in materials %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card access-card h-100">
+                <div class="card-body">
+                    <div class="access-card-title">{{ item.title }}</div>
+
+                    <p class="access-card-text">
+                        {{ item.description|default:"No description provided." }}
+                    </p>
+
+                    <p class="small text-muted mb-1">
+                        <strong>Type:</strong> {{ item.get_material_type_display }}
+                    </p>
+
+                    <p class="small text-muted mb-1">
+                        <strong>Subject:</strong>
+                        {% if item.subject %}
+                            {{ item.subject.code }}
+                        {% else %}
+                            General
+                        {% endif %}
+                    </p>
+
+                    <p class="small text-muted mb-1">
+                        <strong>Class Section:</strong>
+                        {% if item.class_section %}
+                            {{ item.class_section.section_name }}
+                        {% else %}
+                            All Sections
+                        {% endif %}
+                    </p>
+
+                    <p class="small text-muted mb-3">
+                        <strong>Uploaded by:</strong>
+                        {% if item.uploaded_by %}
+                            {{ item.uploaded_by.get_full_name|default:item.uploaded_by.username }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if item.file %}
+                            <a href="{{ item.file.url }}"
+                               target="_blank"
+                               class="btn btn-primary btn-sm">
+                                Open File
+                            </a>
+                        {% endif %}
+
+                        {% if item.external_link %}
+                            <a href="{{ item.external_link }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline-primary btn-sm">
+                                Open Link
+                            </a>
+                        {% endif %}
+
+                        {% if not item.file and not item.external_link %}
+                            <span class="text-muted small">No file or link attached.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted mb-0">No lesson materials available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

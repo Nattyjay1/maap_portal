@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Grade{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Edit Grade</h2>
+    <p class="text-muted mb-0">
+        {{ enrollment.student.student_number }} - {{ enrollment.student.user.get_full_name }}
+    </p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Update Summary Grades</h5>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Quiz Total (30%)</label>
+                    {{ form.quiz_total }}
+                    {% if form.quiz_total.errors %}
+                        <div class="text-danger small">{{ form.quiz_total.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Activity Total (20%)</label>
+                    {{ form.activity_total }}
+                    {% if form.activity_total.errors %}
+                        <div class="text-danger small">{{ form.activity_total.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Exam Total (30%)</label>
+                    {{ form.exam_total }}
+                    {% if form.exam_total.errors %}
+                        <div class="text-danger small">{{ form.exam_total.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Lab Total (10%)</label>
+                    {{ form.lab_total }}
+                    {% if form.lab_total.errors %}
+                        <div class="text-danger small">{{ form.lab_total.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Attendance Score (10%)</label>
+                    {{ form.attendance_score }}
+                    {% if form.attendance_score.errors %}
+                        <div class="text-danger small">{{ form.attendance_score.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reason for Edit</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}
+                        <div class="text-danger small">{{ form.reason.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{% url 'enrolled-student-list' enrollment.class_section.id %}" class="btn btn-outline-secondary">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="section-box mb-4">
+            <h5 class="fw-bold mb-3">Student Information</h5>
+            <p class="mb-2"><strong>Student:</strong> {{ enrollment.student.user.get_full_name }}</p>
+            <p class="mb-2"><strong>Student Number:</strong> {{ enrollment.student.student_number }}</p>
+            <p class="mb-2"><strong>Subject:</strong> {{ enrollment.class_section.subject.code }} - {{ enrollment.class_section.subject.title }}</p>
+            <p class="mb-2"><strong>Section:</strong> {{ enrollment.class_section.section_name }}</p>
+            <p class="mb-0"><strong>Term:</strong> {{ enrollment.class_section.term }} {{ enrollment.class_section.school_year }}</p>
+        </div>
+
+        <div class="section-box mb-4">
+            <h5 class="fw-bold mb-3">Current Computed Result</h5>
+            <p class="mb-2"><strong>Final Grade:</strong> {{ computed_grade }}</p>
+            <p class="mb-0"><strong>Remarks:</strong> {{ remarks }}</p>
+        </div>
+
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Recent Audit Trail</h5>
+
+            {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Old</th>
+                                <th>New</th>
+                                <th>By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ log.field_changed }}</td>
+                                <td>{{ log.old_value }}</td>
+                                <td>{{ log.new_value }}</td>
+                                <td>
+                                    {% if log.edited_by %}
+                                        {{ log.edited_by.get_full_name|default:log.edited_by.username }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="small text-muted">
+                                    Reason: {{ log.reason }}<br>
+                                    {{ log.edited_at }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No adjustment logs yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

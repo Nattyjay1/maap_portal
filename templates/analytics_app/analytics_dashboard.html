@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Analytics Dashboard</h2>
+    <p class="text-muted mb-0">
+        Visual summary of grades, attendance, pass/fail results, academic risk, and encoding progress.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Total Grades Encoded</h6>
+            <h3>{{ total_grades }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Attendance Records</h6>
+            <h3>{{ total_attendance_records }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Passed</h6>
+            <h3>{{ passed_count }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>At-Risk Records</h6>
+            <h3>{{ at_risk_total }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grade Distribution</h5>
+            <canvas id="gradeDistributionChart" height="140"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Attendance Trend by Class</h5>
+            <canvas id="attendanceTrendChart" height="140"></canvas>
+            <p class="text-muted small mt-2 mb-0">
+                Based on attendance summary records per class.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Pass / Fail Summary</h5>
+            <canvas id="passFailChart" height="140"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">At-Risk Students Count</h5>
+            <canvas id="riskChart" height="140"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-12">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Faculty Submission Progress</h5>
+            <canvas id="facultyProgressChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const gradeDistributionLabels = {{ grade_distribution_labels|safe }};
+    const gradeDistributionValues = {{ grade_distribution_values|safe }};
+
+    const attendanceTrendLabels = {{ attendance_trend_labels|safe }};
+    const attendanceTrendValues = {{ attendance_trend_values|safe }};
+
+    const passFailLabels = {{ pass_fail_labels|safe }};
+    const passFailValues = {{ pass_fail_values|safe }};
+
+    const riskLabels = {{ risk_labels|safe }};
+    const riskValues = {{ risk_values|safe }};
+
+    const facultyProgressLabels = {{ faculty_progress_labels|safe }};
+    const facultyProgressValues = {{ faculty_progress_values|safe }};
+
+    new Chart(document.getElementById("gradeDistributionChart"), {
+        type: "bar",
+        data: {
+            labels: gradeDistributionLabels,
+            datasets: [{
+                label: "Number of Students / Records",
+                data: gradeDistributionValues,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("attendanceTrendChart"), {
+        type: "line",
+        data: {
+            labels: attendanceTrendLabels,
+            datasets: [{
+                label: "Average Attendance %",
+                data: attendanceTrendValues,
+                borderWidth: 2,
+                tension: 0.3,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("passFailChart"), {
+        type: "doughnut",
+        data: {
+            labels: passFailLabels,
+            datasets: [{
+                label: "Pass / Fail",
+                data: passFailValues
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    new Chart(document.getElementById("riskChart"), {
+        type: "doughnut",
+        data: {
+            labels: riskLabels,
+            datasets: [{
+                label: "Risk Count",
+                data: riskValues
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    new Chart(document.getElementById("facultyProgressChart"), {
+        type: "bar",
+        data: {
+            labels: facultyProgressLabels,
+            datasets: [{
+                label: "Submission Progress %",
+                data: facultyProgressValues,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

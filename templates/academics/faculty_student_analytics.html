@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Student Performance Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Student Performance Analytics</h2>
+    <p class="text-muted mb-0">
+        Individual analytics for {{ student.user.get_full_name }} based on your assigned classes.
+    </p>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'faculty-student-monitoring' %}" class="btn btn-outline-secondary btn-sm">
+        Back to Student Monitoring
+    </a>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Student Information</h5>
+
+    <div class="row">
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Student Number:</strong></p>
+            <p>{{ student.student_number }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Name:</strong></p>
+            <p>{{ student.user.get_full_name }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Department:</strong></p>
+            <p>
+                {% if student.department %}
+                    {{ student.department.code }}
+                {% else %}
+                    -
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Year / Section:</strong></p>
+            <p>{{ student.year_level }} - {{ student.section }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Average Grade</h6>
+            <h3>
+                {% if average_grade %}
+                    {{ average_grade|floatformat:2 }}
+                {% else %}
+                    0.00
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Average Attendance</h6>
+            <h3>
+                {% if average_attendance %}
+                    {{ average_attendance|floatformat:2 }}%
+                {% else %}
+                    0.00%
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Passed</h6>
+            <h3>{{ passed_count }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Risk Status</h6>
+            <h3>
+                <span class="badge bg-{{ risk_badge }}">{{ risk_level }}</span>
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-2">Advisory Message</h5>
+    <p class="mb-0">{{ advisory }}</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grade Performance</h5>
+            <canvas id="studentGradeChart" height="160"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Attendance Performance</h5>
+            <canvas id="studentAttendanceChart" height="160"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Pass / Fail Summary</h5>
+            <canvas id="passFailChart" height="190"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Subject Performance Table</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Section</th>
+                            <th>Final Grade</th>
+                            <th>Remarks</th>
+                            <th>Attendance</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ row.enrollment.class_section.subject.code }}</td>
+                            <td>{{ row.enrollment.class_section.section_name }}</td>
+                            <td>
+                                {% if row.grade %}
+                                    {{ row.grade.final_grade }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.grade %}
+                                    {{ row.grade.remarks }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.attendance %}
+                                    {{ row.attendance.attendance_percent }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.subject_risk == "High Risk" %}
+                                    <span class="badge bg-danger">High Risk</span>
+                                {% elif row.subject_risk == "Moderate Risk" %}
+                                    <span class="badge bg-warning">Moderate Risk</span>
+                                {% else %}
+                                    <span class="badge bg-success">Low Risk</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                No records found for this student.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Recent Grade Edit History</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Field</th>
+                    <th>Old</th>
+                    <th>New</th>
+                    <th>Reason</th>
+                    <th>Date Edited</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_grade_edits %}
+                <tr>
+                    <td>{{ log.grade.enrollment.class_section.subject.code }}</td>
+                    <td>{{ log.field_changed }}</td>
+                    <td>{{ log.old_value }}</td>
+                    <td>{{ log.new_value }}</td>
+                    <td>{{ log.reason }}</td>
+                    <td>{{ log.edited_at }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No grade edit history found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const subjectLabels = {{ subject_labels|safe }};
+    const gradeValues = {{ grade_values|safe }};
+    const attendanceValues = {{ attendance_values|safe }};
+    const passFailLabels = {{ pass_fail_labels|safe }};
+    const passFailValues = {{ pass_fail_values|safe }};
+
+    function createBarChart(canvasId, labels, values, labelText) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createLineChart(canvasId, labels, values, labelText) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createDoughnutChart(canvasId, labels, values) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+
+    createBarChart(
+        'studentGradeChart',
+        subjectLabels,
+        gradeValues,
+        'Final Grade'
+    );
+
+    createLineChart(
+        'studentAttendanceChart',
+        subjectLabels,
+        attendanceValues,
+        'Attendance Percentage'
+    );
+
+    createDoughnutChart(
+        'passFailChart',
+        passFailLabels,
+        passFailValues
+    );
+</script>
+{% endblock %}

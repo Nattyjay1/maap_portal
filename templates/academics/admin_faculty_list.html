@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Faculty Monitoring</h2>
+    <p class="text-muted mb-0">
+        View professors and instructors, filter by department, and open individual performance analytics.
+    </p>
+</div>
+
+<div class="section-box mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label">Filter by Department</label>
+            <select name="department" class="form-control">
+                <option value="">All Departments</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}"
+                        {% if selected_department_id == department.id|stringformat:"s" %}selected{% endif %}>
+                        {{ department.code }} - {{ department.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a href="{% url 'admin-faculty-list' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Professors / Instructors List</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Faculty Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Classes</th>
+                    <th>Students</th>
+                    <th>Encoding Progress</th>
+                    <th>Avg Grade</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in faculty_rows %}
+                <tr>
+                    <td>{{ row.faculty.employee_id }}</td>
+                    <td>{{ row.faculty.user.get_full_name }}</td>
+                    <td>
+                        {% if row.faculty.department %}
+                            {{ row.faculty.department.code }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ row.faculty.designation }}</td>
+                    <td>{{ row.assigned_classes }}</td>
+                    <td>{{ row.total_students }}</td>
+                    <td>
+                        {{ row.progress_percent }}%
+                        {% if row.progress_status == "Complete" %}
+                            <span class="badge bg-success ms-1">Complete</span>
+                        {% elif row.progress_status == "In Progress" %}
+                            <span class="badge bg-warning ms-1">In Progress</span>
+                        {% else %}
+                            <span class="badge bg-secondary ms-1">Not Started</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin-faculty-analytics' row.faculty.id %}" class="btn btn-primary btn-sm">
+                            View Analytics
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">No faculty records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

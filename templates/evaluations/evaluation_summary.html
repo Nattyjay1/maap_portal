@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Evaluation Summary{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Faculty Evaluation Summary</h2>
+    <p class="text-muted mb-0">Summarized evaluation results for faculty members.</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Total Evaluation Entries</h6>
+            <h3>{{ total_entries }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Faculty Evaluated</h6>
+            <h3>{{ total_faculty_evaluated }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Overall Average Score</h6>
+            <h3>
+                {% if overall_average %}
+                    {{ overall_average|floatformat:2 }}
+                {% else %}
+                    0.00
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="section-box">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Faculty Name</th>
+                    <th>Department</th>
+                    <th>Average Score</th>
+                    <th>Total Evaluations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary %}
+                <tr>
+                    <td>{{ item.faculty__employee_id }}</td>
+                    <td>{{ item.faculty__user__first_name }} {{ item.faculty__user__last_name }}</td>
+                    <td>{{ item.faculty__department__code }}</td>
+                    <td>{{ item.average_score|floatformat:2 }}</td>
+                    <td>{{ item.total_evaluations }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No evaluation summary data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

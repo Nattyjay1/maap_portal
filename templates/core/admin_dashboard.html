@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Admin / Dean Dashboard</h2>
+    <p class="text-muted mb-0">
+        Analytics overview of department performance, faculty progress, at-risk students, and evaluation summaries.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Total Departments</h6>
+            <h3>{{ total_departments }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Total Faculty</h6>
+            <h3>{{ total_faculty }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>At-Risk Students</h6>
+            <h3>{{ at_risk_students_count }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Evaluation Average</h6>
+            <h3>
+                {% if overall_evaluation_average %}
+                    {{ overall_evaluation_average|floatformat:2 }}
+                {% else %}
+                    0.00
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Department Performance</h5>
+            <canvas id="departmentPerformanceChart" height="110"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Quick Access</h5>
+
+            <div class="d-grid gap-2">
+                <a href="{% url 'evaluation-summary' %}" class="btn btn-primary">Evaluation Summary</a>
+                <a href="{% url 'evaluation-input' %}" class="btn btn-outline-primary">Evaluation Input</a>
+                <a href="{% url 'forms-repository' %}" class="btn btn-warning">Forms</a>
+                <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Reports</a>
+                <a href="{% url 'unified-access' %}" class="btn btn-outline-primary">Unified Access</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grade Distribution</h5>
+            <canvas id="gradeDistributionChart" height="160"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Average Attendance by Department</h5>
+            <canvas id="attendanceTrendChart" height="160"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Pass / Fail Summary</h5>
+            <canvas id="passFailChart" height="180"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">At-Risk Students Count</h5>
+            <canvas id="riskChart" height="180"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Faculty Submission Progress</h5>
+            <div style="height: 360px;">
+                <canvas id="facultyProgressChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Department Performance Table</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Students</th>
+                            <th>Avg Final Grade</th>
+                            <th>Avg Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in department_performance %}
+                        <tr>
+                            <td>{{ item.enrollment__class_section__subject__department__code }}</td>
+                            <td>{{ item.total_students }}</td>
+                            <td>
+                                {% if item.avg_final_grade %}
+                                    {{ item.avg_final_grade|floatformat:2 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.avg_attendance %}
+                                    {{ item.avg_attendance|floatformat:2 }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No department performance data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Faculty Encoding Progress</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Faculty</th>
+                            <th>Department</th>
+                            <th>Encoded</th>
+                            <th>Total</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in faculty_progress %}
+                        <tr>
+                            <td>{{ row.faculty.user.get_full_name }}</td>
+                            <td>
+                                {% if row.faculty.department %}
+                                    {{ row.faculty.department.code }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ row.graded_records }}</td>
+                            <td>{{ row.total_records }}</td>
+                            <td>{{ row.progress_percent }}%</td>
+                            <td>
+                                {% if row.progress_status == "Complete" %}
+                                    <span class="badge bg-success">Complete</span>
+                                {% elif row.progress_status == "In Progress" %}
+                                    <span class="badge bg-warning">In Progress</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Started</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No faculty progress data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Evaluation Summary</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Faculty</th>
+                            <th>Dept</th>
+                            <th>Avg Score</th>
+                            <th>Total Eval</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in evaluation_summary %}
+                        <tr>
+                            <td>{{ item.faculty__user__first_name }} {{ item.faculty__user__last_name }}</td>
+                            <td>{{ item.faculty__department__code }}</td>
+                            <td>{{ item.average_score|floatformat:2 }}</td>
+                            <td>{{ item.total_evaluations }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No evaluation summary data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">At-Risk Students Preview</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Department</th>
+                            <th>Subject</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            {% for row in at_risk_students_preview %}
+                                <tr>
+                                    <td>{{ row.student.user.get_full_name }}</td>
+                                        <td>
+                                            {% if row.department %}
+                                            {{ row.department.code }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ row.subject.code }}</td>
+                                        <td>
+                                            {% if row.risk_level == "High Risk" %}
+                                            <span class="badge bg-danger">High Risk</span>
+                                            {% else %}
+                                            <span class="badge bg-warning">Moderate Risk</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                <tr>
+                                    <td colspan="4" class="small text-muted">
+                                        {{ row.reason }}
+                                        {% if row.grade %}
+                                        | Grade: {{ row.grade.final_grade }}
+                                        {% endif %}
+                                        {% if row.attendance %}
+                                        | Attendance: {{ row.attendance.attendance_percent }}%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No at-risk students detected.</td>
+                                </tr>
+                                {% endfor %}
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const departmentChartLabels = {{ department_chart_labels|safe }};
+    const departmentChartValues = {{ department_chart_values|safe }};
+
+    const gradeDistributionLabels = {{ grade_distribution_labels|safe }};
+    const gradeDistributionValues = {{ grade_distribution_values|safe }};
+
+    const attendanceTrendLabels = {{ attendance_trend_labels|safe }};
+    const attendanceTrendValues = {{ attendance_trend_values|safe }};
+
+    const passFailLabels = {{ pass_fail_labels|safe }};
+    const passFailValues = {{ pass_fail_values|safe }};
+
+    const riskLabels = {{ at_risk_labels|safe }};
+    const riskValues = {{ at_risk_values|safe }};
+
+    const facultyProgressLabels = {{ faculty_progress_labels|safe }};
+    const facultyProgressValues = {{ faculty_progress_values|safe }};
+
+    function createBarChart(canvasId, labels, values, labelText, suggestedMax = 100) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: suggestedMax
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createHorizontalBarChart(canvasId, labels, values, labelText) {
+    const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createLineChart(canvasId, labels, values, labelText) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createDoughnutChart(canvasId, labels, values) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+
+    createBarChart(
+        'departmentPerformanceChart',
+        departmentChartLabels,
+        departmentChartValues,
+        'Average Final Grade'
+    );
+
+    createBarChart(
+        'gradeDistributionChart',
+        gradeDistributionLabels,
+        gradeDistributionValues,
+        'Number of Grade Records',
+        30
+    );
+
+    createLineChart(
+        'attendanceTrendChart',
+        attendanceTrendLabels,
+        attendanceTrendValues,
+        'Average Attendance'
+    );
+
+    createDoughnutChart(
+        'passFailChart',
+        passFailLabels,
+        passFailValues
+    );
+
+    createDoughnutChart(
+        'riskChart',
+        riskLabels,
+        riskValues
+    );
+
+    createHorizontalBarChart(
+        'facultyProgressChart',
+        facultyProgressLabels,
+        facultyProgressValues,
+        'Submission Progress %'
+    );
+</script>
+{% endblock %}

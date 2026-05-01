@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}My Classes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">My Classes</h2>
+    <p class="text-muted mb-0">Select a class to encode student grades.</p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="section-box">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Term</th>
+                    <th>School Year</th>
+                    <th>Schedule</th>
+                    <th>Room</th>
+                    <th>Students</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                <tr>
+                    <td>{{ class.subject.code }} - {{ class.subject.title }}</td>
+                    <td>{{ class.section_name }}</td>
+                    <td>{{ class.term }}</td>
+                    <td>{{ class.school_year }}</td>
+                    <td>{{ class.schedule }}</td>
+                    <td>{{ class.room }}</td>
+                    <td>{{ class.total_students }}</td>
+                    <td>
+                        <a href="{% url 'enrolled-student-list' class.id %}" class="btn btn-primary btn-sm">
+                            View Students
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">No assigned classes found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

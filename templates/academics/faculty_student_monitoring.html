@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Student Monitoring{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Student Monitoring</h2>
+    <p class="text-muted mb-0">
+        Monitor students under your assigned classes and view individual performance analytics.
+    </p>
+</div>
+
+<div class="section-box mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label">Filter by Section</label>
+            <select name="section" class="form-control">
+                <option value="">All Sections</option>
+                {% for section in assigned_sections %}
+                    <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>
+                        {{ section }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a href="{% url 'faculty-student-monitoring' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Students List</h5>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Student Name</th>
+                    <th>Department</th>
+                    <th>Year / Section</th>
+                    <th>Risk Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in student_rows %}
+                <tr>
+                    <td>{{ row.student.student_number }}</td>
+
+                    <td>{{ row.student.user.get_full_name }}</td>
+
+                    <td>
+                        {% if row.student.department %}
+                            {{ row.student.department.code }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>{{ row.student.year_level }} - {{ row.student.section }}</td>
+
+                    <td>
+                        <span class="badge bg-{{ row.risk_badge }}">
+                            {{ row.risk_level }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <a href="{% url 'faculty-student-analytics' row.student.id %}" class="btn btn-primary btn-sm">
+                            View Analytics
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No students found under your assigned classes.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

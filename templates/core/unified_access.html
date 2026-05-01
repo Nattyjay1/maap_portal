@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Unified Access Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Unified Access Portal</h2>
+    <p class="text-muted mb-0">
+        Centralized access to selected academic systems and services.
+    </p>
+</div>
+
+<div class="mb-3">
+    <span class="quick-badge">Single Access Point</span>
+    <span class="quick-badge">Prototype Portal</span>
+    <span class="quick-badge">Analytics Ready</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">E-GMS</div>
+                <p class="access-card-text">
+                    Access grade management services and related academic encoding workflows.
+                </p>
+                <a href="http://app.maap.edu.ph:1234/egms/"
+                    target="blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-primary btn-sm">Open Module</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">MAAP SEAS</div>
+                <p class="access-card-text">
+                    Access enrollment, academic status, and selected student-related services.
+                </p>
+                <a href="http://192.168.1.20/seas/login/index.php" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-primary btn-sm">Open Module</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">Faculty Evaluation</div>
+                <p class="access-card-text">
+                    Access faculty evaluation summaries and related monitoring features.
+                </p>
+                <a href="{% url 'evaluation-portal' %}" class="btn btn-primary btn-sm">Open Module</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">Forms</div>
+                <p class="access-card-text">
+                    Access downloadable academic forms and supporting documents.
+                </p>
+                <a href="{% url 'forms-repository' %}" class="btn btn-primary btn-sm">Open Module</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+    <div class="card access-card">
+        <div class="card-body">
+            <div class="access-card-title">Lesson / Materials</div>
+            <p class="access-card-text">
+                Access uploaded instructional materials, learning modules, references, and class resources.
+            </p>
+            <a href="{% url 'lesson-materials' %}" class="btn btn-primary btn-sm">
+                Open Module
+            </a>
+        </div>
+    </div>
+</div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card access-card">
+            <div class="card-body">
+                <div class="access-card-title">Analytics Dashboard</div>
+                <p class="access-card-text">
+                    Access consolidated dashboards, summaries, and intelligent monitoring insights.
+                </p>
+                <a href="{% url 'analytics-dashboard' %}" class="btn btn-primary btn-sm">Open Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

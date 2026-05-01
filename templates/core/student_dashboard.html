@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Student Dashboard</h2>
+    <p class="text-muted mb-0">Summary of grades, attendance, academic risk status, and available forms.</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Enrolled Subjects</h6>
+            <h3>{{ enrolled_subjects }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Average Grade</h6>
+            <h3>
+                {% if average_grade %}
+                    {{ average_grade|floatformat:2 }}
+                {% else %}
+                    0.00
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Average Attendance</h6>
+            <h3>
+                {% if average_attendance %}
+                    {{ average_attendance|floatformat:2 }}%
+                {% else %}
+                    0.00%
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="portal-stat-card">
+            <h6>Risk Status</h6>
+            <h3>
+                <span class="badge bg-{{ risk_badge_class }}">{{ risk_level }}</span>
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grade Performance Chart</h5>
+            <canvas id="studentGradeChart" height="110"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Advisory Message</h5>
+            <p class="mb-3">{{ advisory_message }}</p>
+
+            <div class="d-grid gap-2">
+                <a href="{% url 'printable-my-progress-report' %}" class="btn btn-primary">View Progress Report</a>
+                <a href="{% url 'student-attendance-list' %}" class="btn btn-warning">View My Attendance</a>
+                <a href="{% url 'student-forms-placeholder' %}" class="btn btn-outline-primary">View Forms</a>
+                <a href="{% url 'analytics-dashboard' %}" class="btn btn-outline-primary">Analytics Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grades and Attendance Summary</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Final Grade</th>
+                            <th>Remarks</th>
+                            <th>Attendance</th>
+                            <th>Status</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>
+                                {{ row.enrollment.class_section.subject.code }} -
+                                {{ row.enrollment.class_section.subject.title }}
+                            </td>
+                            <td>
+                                {% if row.grade %}
+                                    {{ row.grade.final_grade }}
+                                {% else %}
+                                    <span class="text-muted">Not encoded</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.grade %}
+                                    {{ row.grade.remarks }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.attendance %}
+                                    {{ row.attendance.attendance_percent }}%
+                                {% else %}
+                                    <span class="text-muted">Not encoded</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.attendance %}
+                                    {{ row.attendance.status }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.subject_risk == "High Risk" %}
+                                    <span class="badge bg-danger">{{ row.subject_risk }}</span>
+                                {% elif row.subject_risk == "Moderate Risk" %}
+                                    <span class="badge bg-warning">{{ row.subject_risk }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ row.subject_risk }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No academic records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Available Forms</h5>
+
+            {% for form in forms %}
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="fw-bold mb-1">{{ form.title }}</h6>
+                    <p class="text-muted small mb-2">{{ form.description }}</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Open Form</a>
+                </div>
+            {% empty %}
+                <p class="text-muted mb-0">No forms available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const gradeLabels = {{ chart_labels|safe }};
+    const gradeValues = {{ chart_values|safe }};
+
+    const ctx = document.getElementById('studentGradeChart');
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: gradeLabels,
+                datasets: [{
+                    label: 'Final Grade',
+                    data: gradeValues,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">My Attendance</h2>
+    <p class="text-muted mb-0">Attendance summary across enrolled classes.</p>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-2">Attendance Analytics</h5>
+    <p class="mb-0">
+        <strong>Average Attendance:</strong>
+        {% if average_attendance %}
+            {{ average_attendance|floatformat:2 }}%
+        {% else %}
+            No attendance data yet
+        {% endif %}
+    </p>
+</div>
+
+<div class="section-box">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Late</th>
+                    <th>Attendance %</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.enrollment.class_section.subject.code }} - {{ row.enrollment.class_section.subject.title }}</td>
+                    <td>{{ row.enrollment.class_section.section_name }}</td>
+                    <td>{% if row.attendance %}{{ row.attendance.present_count }}{% else %}0{% endif %}</td>
+                    <td>{% if row.attendance %}{{ row.attendance.absent_count }}{% else %}0{% endif %}</td>
+                    <td>{% if row.attendance %}{{ row.attendance.late_count }}{% else %}0{% endif %}</td>
+                    <td>{% if row.attendance %}{{ row.attendance.attendance_percent }}%{% else %}-{% endif %}</td>
+                    <td>{% if row.attendance %}{{ row.attendance.status }}{% else %}-{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No enrolled classes found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

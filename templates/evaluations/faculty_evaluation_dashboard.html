@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}My Faculty Evaluation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">My Faculty Evaluation</h2>
+    <p class="text-muted mb-0">
+        View your evaluation result analytics and submit a self-evaluation entry.
+    </p>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Faculty Information</h5>
+
+    <div class="row">
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Employee ID:</strong></p>
+            <p>{{ faculty_profile.employee_id }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Name:</strong></p>
+            <p>{{ faculty_profile.user.get_full_name }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Department:</strong></p>
+            <p>
+                {% if faculty_profile.department %}
+                    {{ faculty_profile.department.code }}
+                {% else %}
+                    -
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="col-md-3">
+            <p class="mb-1"><strong>Designation:</strong></p>
+            <p>{{ faculty_profile.designation }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Total Evaluation Entries</h6>
+            <h3>{{ total_evaluations }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Overall Evaluation Average</h6>
+            <h3>
+                {% if overall_average %}
+                    {{ overall_average|floatformat:2 }}
+                {% else %}
+                    0.00
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="portal-stat-card">
+            <h6>Latest Status</h6>
+            <h3>
+                {% if overall_average and overall_average >= 90 %}
+                    <span class="badge bg-success">Excellent</span>
+                {% elif overall_average and overall_average >= 85 %}
+                    <span class="badge bg-primary">Very Good</span>
+                {% elif overall_average and overall_average >= 80 %}
+                    <span class="badge bg-warning">Satisfactory</span>
+                {% else %}
+                    <span class="badge bg-secondary">No Data</span>
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Evaluation Average by Type</h5>
+            <canvas id="evaluationTypeChart" height="150"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Self-Evaluation Input</h5>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Self-Evaluation Score</label>
+                    {{ form.evaluation_score }}
+                    {% if form.evaluation_score.errors %}
+                        <div class="text-danger small">{{ form.evaluation_score.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Term</label>
+                    {{ form.term }}
+                    {% if form.term.errors %}
+                        <div class="text-danger small">{{ form.term.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">School Year</label>
+                    {{ form.school_year }}
+                    {% if form.school_year.errors %}
+                        <div class="text-danger small">{{ form.school_year.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Remarks / Reflection</label>
+                    {{ form.remarks }}
+                    {% if form.remarks.errors %}
+                        <div class="text-danger small">{{ form.remarks.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Submit Self-Evaluation
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Evaluation Breakdown</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Evaluator Type</th>
+                    <th>Total Entries</th>
+                    <th>Average Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in evaluation_by_type %}
+                <tr>
+                    <td>
+                        {% if item.evaluator_type == "student" %}
+                            Student
+                        {% elif item.evaluator_type == "peer" %}
+                            Peer
+                        {% elif item.evaluator_type == "admin" %}
+                            Admin
+                        {% elif item.evaluator_type == "self" %}
+                            Self-Evaluation
+                        {% else %}
+                            {{ item.evaluator_type }}
+                        {% endif %}
+                    </td>
+                    <td>{{ item.total }}</td>
+                    <td>
+                        {% if item.average_score %}
+                            {{ item.average_score|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">
+                        No evaluation records available yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Recent Evaluation Records</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Evaluator Type</th>
+                    <th>Score</th>
+                    <th>Term</th>
+                    <th>School Year</th>
+                    <th>Remarks</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evaluation in recent_evaluations %}
+                <tr>
+                    <td>{{ evaluation.get_evaluator_type_display }}</td>
+                    <td>{{ evaluation.evaluation_score }}</td>
+                    <td>{{ evaluation.term }}</td>
+                    <td>{{ evaluation.school_year }}</td>
+                    <td>{{ evaluation.remarks }}</td>
+                    <td>{{ evaluation.created_at }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No evaluation records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const chartLabels = {{ chart_labels|safe }};
+    const chartValues = {{ chart_values|safe }};
+
+    const ctx = document.getElementById('evaluationTypeChart');
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Average Evaluation Score',
+                    data: chartValues,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

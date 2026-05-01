@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Faculty Dashboard</h2>
+    <p class="text-muted mb-0">
+        Overview of assigned classes, grade encoding progress, attendance, and student monitoring.
+    </p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>Assigned Classes</h6>
+            <h3>{{ assigned_classes }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>Total Students</h6>
+            <h3>{{ total_students }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>Encoding Progress</h6>
+            <h3>{{ encoding_progress }}%</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>Average Grade</h6>
+            <h3>{{ average_grade }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>Average Attendance</h6>
+            <h3>{{ average_attendance }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xl-2">
+        <div class="portal-stat-card">
+            <h6>At-Risk Students</h6>
+            <h3>{{ at_risk_students_count }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Class Grade Performance</h5>
+            <canvas id="classGradeChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Quick Links</h5>
+
+            <div class="d-grid gap-2">
+                <a href="{% url 'faculty-class-list' %}" class="btn btn-primary">My Classes</a>
+                <a href="{% url 'faculty-student-monitoring' %}" class="btn btn-outline-primary">Student Monitoring</a>
+                <a href="{% url 'faculty-class-advisory' %}" class="btn btn-outline-primary">Class Advisory</a>
+                <a href="{% url 'faculty-class-list' %}" class="btn btn-outline-primary">Encode Grades</a>
+                <a href="{% url 'faculty-attendance-class-list' %}" class="btn btn-warning">Encode Attendance</a>
+                <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Reports</a>
+                <a href="{% url 'unified-access' %}" class="btn btn-outline-primary">Unified Access</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Class Attendance Performance</h5>
+            <canvas id="classAttendanceChart" height="160"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Pass / Fail Summary</h5>
+            <canvas id="passFailChart" height="180"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Student Risk Summary</h5>
+            <canvas id="riskChart" height="180"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Grade Distribution</h5>
+            <canvas id="gradeDistributionChart" height="160"></canvas>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Assigned Class Monitoring</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Section</th>
+                            <th>Students</th>
+                            <th>Avg Grade</th>
+                            <th>Avg Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in assigned_classes_qs %}
+                        <tr>
+                            <td>{{ class.subject.code }}</td>
+                            <td>{{ class.section_name }}</td>
+                            <td>{{ class.total_students }}</td>
+                            <td>
+                                {% if class.avg_grade %}
+                                    {{ class.avg_grade|floatformat:2 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if class.avg_attendance %}
+                                    {{ class.avg_attendance|floatformat:2 }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No assigned classes found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">At-Risk Students Preview</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in at_risk_students_preview %}
+                        <tr>
+                            <td>{{ row.student.user.get_full_name }}</td>
+                            <td>{{ row.subject.code }}</td>
+                            <td>
+                                {% if row.risk_level == "High Risk" %}
+                                    <span class="badge bg-danger">High Risk</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Moderate Risk</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="small text-muted">
+                                {{ row.reason }}
+                                {% if row.grade %}
+                                    | Grade: {{ row.grade.final_grade }}
+                                {% endif %}
+                                {% if row.attendance %}
+                                    | Attendance: {{ row.attendance.attendance_percent }}%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No at-risk students detected.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="section-box">
+            <h5 class="fw-bold mb-3">Recent Grade Edits</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Field</th>
+                            <th>Old</th>
+                            <th>New</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_grade_edits %}
+                        <tr>
+                            <td>{{ log.grade.enrollment.student.user.get_full_name }}</td>
+                            <td>{{ log.grade.enrollment.class_section.subject.code }}</td>
+                            <td>{{ log.field_changed }}</td>
+                            <td>{{ log.old_value }}</td>
+                            <td>{{ log.new_value }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="small text-muted">
+                                Reason: {{ log.reason }} | {{ log.edited_at }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No recent grade edits found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const classLabels = {{ class_labels|safe }};
+    const classGradeValues = {{ class_grade_values|safe }};
+    const classAttendanceValues = {{ class_attendance_values|safe }};
+
+    const passFailLabels = {{ pass_fail_labels|safe }};
+    const passFailValues = {{ pass_fail_values|safe }};
+
+    const gradeDistributionLabels = {{ grade_distribution_labels|safe }};
+    const gradeDistributionValues = {{ grade_distribution_values|safe }};
+
+    const riskLabels = {{ risk_labels|safe }};
+    const riskValues = {{ risk_values|safe }};
+
+    function createBarChart(canvasId, labels, values, labelText, suggestedMax = 100) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: suggestedMax
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createLineChart(canvasId, labels, values, labelText) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelText,
+                        data: values,
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createDoughnutChart(canvasId, labels, values) {
+        const ctx = document.getElementById(canvasId);
+
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+    }
+
+    createBarChart(
+        'classGradeChart',
+        classLabels,
+        classGradeValues,
+        'Average Final Grade'
+    );
+
+    createLineChart(
+        'classAttendanceChart',
+        classLabels,
+        classAttendanceValues,
+        'Average Attendance'
+    );
+
+    createDoughnutChart(
+        'passFailChart',
+        passFailLabels,
+        passFailValues
+    );
+
+    createDoughnutChart(
+        'riskChart',
+        riskLabels,
+        riskValues
+    );
+
+    createBarChart(
+        'gradeDistributionChart',
+        gradeDistributionLabels,
+        gradeDistributionValues,
+        'Grade Records',
+        20
+    );
+</script>
+{% endblock %}

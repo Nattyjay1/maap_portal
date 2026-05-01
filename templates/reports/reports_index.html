@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="fw-bold mb-1">Reports</h2>
+    <p class="text-muted mb-0">View and print academic reports from the browser.</p>
+</div>
+
+{% if user.role == "student" %}
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Student Reports</h5>
+    <a href="{% url 'printable-my-progress-report' %}" class="btn btn-primary">
+        Open My Progress Report
+    </a>
+</div>
+{% endif %}
+
+{% if user.role == "admin" %}
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Department Reports</h5>
+    <a href="{% url 'printable-department-summary' %}" class="btn btn-primary">
+        Open Department Summary Report
+    </a>
+</div>
+
+<div class="section-box mb-4">
+    <h5 class="fw-bold mb-3">Student Progress Reports</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.student_number }}</td>
+                    <td>{{ student.user.get_full_name }}</td>
+                    <td>{{ student.department.code }}</td>
+                    <td>
+                        <a href="{% url 'printable-student-progress-report' student.id %}" class="btn btn-outline-primary btn-sm">
+                            Print Progress
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">No students available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if user.role == "admin" or user.role == "faculty" %}
+<div class="section-box">
+    <h5 class="fw-bold mb-3">Class Grade Reports</h5>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Faculty</th>
+                    <th>Term</th>
+                    <th>School Year</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                <tr>
+                    <td>{{ class.subject.code }} - {{ class.subject.title }}</td>
+                    <td>{{ class.section_name }}</td>
+                    <td>
+                        {% if class.faculty %}
+                            {{ class.faculty.user.get_full_name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ class.term }}</td>
+                    <td>{{ class.school_year }}</td>
+                    <td>
+                        <a href="{% url 'printable-grade-report' class.id %}" class="btn btn-outline-primary btn-sm">
+                            Print Grade Report
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No classes available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
