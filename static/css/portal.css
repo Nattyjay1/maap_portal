@@ -2,6 +2,7 @@ body {
     background-color: #f4f7fb;
     font-family: Arial, sans-serif;
     margin: 0;
+    overflow-x: hidden;
 }
 
 .portal-navbar {
@@ -11,14 +12,18 @@ body {
 .portal-wrapper {
     display: flex;
     min-height: calc(100vh - 56px);
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 .portal-sidebar {
     width: 240px;
+    flex: 0 0 240px;
     background-color: #1f2a44;
     color: #ffffff;
     padding: 20px 15px;
-    flex-shrink: 0;
 }
 
 .sidebar-heading {
@@ -45,8 +50,13 @@ body {
 }
 
 .portal-content {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    width: calc(100vw - 240px);
+    max-width: calc(100vw - 240px);
     padding: 24px;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .page-header {
@@ -209,9 +219,12 @@ body {
 
     .portal-sidebar {
         width: 100%;
+        flex-basis: auto;
     }
 
     .portal-content {
+        width: 100%;
+        max-width: 100%;
         padding: 16px;
     }
 }
@@ -262,4 +275,293 @@ body {
 .sidebar-sublink:hover {
     background-color: rgba(255, 255, 255, 0.12);
     color: #ffffff;
+}
+
+.admin-dashboard {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.admin-dashboard *,
+.portal-content * {
+    box-sizing: border-box;
+}
+
+.admin-dashboard .row,
+.admin-dashboard [class*="col-"],
+.dashboard-card {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.admin-dashboard .row {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.admin-dashboard .row > * {
+    min-width: 0;
+}
+
+.admin-dashboard .card {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.admin-dashboard .card-body {
+    min-width: 0;
+}
+
+.admin-dashboard .chart-card {
+    min-height: 0;
+}
+
+.admin-dashboard .chart-card .card-body {
+    padding: 1rem;
+}
+
+.admin-dashboard .compact-chart-card .card-body {
+    padding: 0.75rem;
+}
+
+.admin-dashboard .chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 230px;
+    max-height: 230px;
+}
+
+.admin-dashboard .chart-container-compact {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 210px;
+    max-height: 210px;
+    overflow: hidden;
+}
+
+.admin-dashboard .compact-chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 210px;
+    max-height: 210px;
+    overflow: hidden;
+}
+
+.admin-dashboard .chart-container canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+.admin-dashboard .chart-container-compact canvas {
+    max-width: 100% !important;
+    max-height: 210px !important;
+}
+
+.admin-dashboard .compact-chart-container canvas {
+    max-width: 100% !important;
+    max-height: 210px !important;
+}
+
+.admin-dashboard .compact-info-card {
+    min-height: 260px;
+}
+
+.admin-dashboard .compact-info-card .card-body {
+    padding: 0.85rem;
+}
+
+.admin-dashboard .compact-donut-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 220px;
+    max-height: 220px;
+    overflow: hidden;
+}
+
+.admin-dashboard .compact-donut-container canvas {
+    max-width: 100% !important;
+    max-height: 220px !important;
+}
+
+.admin-dashboard .table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.admin-dashboard .table {
+    font-size: 0.78rem;
+    margin-bottom: 0;
+}
+
+.admin-dashboard .compact-table {
+    font-size: 0.78rem;
+}
+
+.admin-dashboard .wide-table {
+    min-width: 720px;
+}
+
+.admin-dashboard .medium-table {
+    min-width: 560px;
+}
+
+.admin-dashboard .table td,
+.admin-dashboard .table th {
+    vertical-align: middle;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    padding: 0.35rem;
+}
+
+.admin-dashboard .compact-table th,
+.admin-dashboard .compact-table td {
+    vertical-align: middle;
+    white-space: normal;
+}
+
+.admin-dashboard .table td.reason-col,
+.admin-dashboard .table td.action-col,
+.admin-dashboard .table td.subject-col,
+.admin-dashboard .table th.reason-col,
+.admin-dashboard .table th.action-col,
+.admin-dashboard .table th.subject-col {
+    max-width: 140px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.admin-dashboard .table td.action-col,
+.admin-dashboard .table th.action-col {
+    max-width: 150px;
+}
+
+.admin-dashboard .scrollable-table-card {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.admin-dashboard .scrollable-risk-table {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.admin-dashboard canvas {
+    max-width: 100% !important;
+}
+
+.admin-dashboard .scrollable-table-card thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #ffffff;
+}
+
+.admin-dashboard .scrollable-risk-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #ffffff;
+}
+
+.admin-dashboard .dashboard-card h3 {
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.admin-dashboard .summary-grid {
+    justify-content: flex-start;
+}
+
+.admin-dashboard .summary-card {
+    min-height: 110px;
+    max-height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-dashboard .summary-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.admin-dashboard .summary-card .metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.admin-dashboard .summary-card .metric-label {
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+}
+
+.admin-dashboard .summary-card .metric-subtext {
+    font-size: 0.70rem;
+    line-height: 1.1;
+}
+
+.admin-dashboard .summary-card .badge {
+    align-self: flex-start;
+    font-size: 0.70rem;
+    padding: 0.3em 0.5em;
+}
+
+.admin-dashboard .summary-card .progress {
+    height: 6px !important;
+}
+
+.admin-dashboard .insight-card .card-body {
+    padding: 0.85rem;
+    font-size: 0.85rem;
+}
+
+.admin-dashboard .insight-card .recommended-action-box {
+    font-size: 0.80rem;
+    padding: 0.75rem;
+}
+
+.admin-dashboard .dashboard-card .badge,
+.admin-dashboard .table .badge {
+    white-space: normal;
+    text-align: left;
+}
+
+@media screen and (max-width: 1199px) {
+    .admin-dashboard .chart-container,
+    .admin-dashboard .chart-container-compact,
+    .admin-dashboard .compact-chart-container,
+    .admin-dashboard .compact-donut-container {
+        height: 210px;
+        max-height: 210px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .admin-dashboard .wide-table,
+    .admin-dashboard .medium-table {
+        min-width: 640px;
+    }
+
+    .admin-dashboard .chart-container,
+    .admin-dashboard .chart-container-compact,
+    .admin-dashboard .compact-chart-container,
+    .admin-dashboard .compact-donut-container {
+        height: 200px;
+        max-height: 200px;
+    }
 }

@@ -6,6 +6,10 @@ urlpatterns = [
     path("redirect/", views.role_redirect_view, name="role-redirect"),
 
     path("admin-dashboard/", views.admin_dashboard, name="admin-dashboard"),
+    path("admin-dashboard/export/at-risk/", views.admin_export_at_risk_report, name="admin-dashboard-export-at-risk"),
+    path("admin-dashboard/export/faculty-submission/", views.admin_export_faculty_submission_report, name="admin-dashboard-export-faculty-submission"),
+    path("admin-dashboard/export/department-risk/", views.admin_export_department_risk_report, name="admin-dashboard-export-department-risk"),
+    path("admin-dashboard/export/top-sections/", views.admin_export_top_sections_report, name="admin-dashboard-export-top-sections"),
     path("faculty-dashboard/", views.faculty_dashboard, name="faculty-dashboard"),
     path("student-dashboard/", views.student_dashboard, name="student-dashboard"),
     path("student/forms/", views.student_forms_placeholder, name="student-forms-placeholder"),

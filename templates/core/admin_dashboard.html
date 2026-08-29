@@ -1,481 +1,545 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin / Function Head Dashboard{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h2 class="fw-bold mb-1">Admin / Dean Dashboard</h2>
-    <p class="text-muted mb-0">
-        Analytics overview of department performance, faculty progress, at-risk students, and evaluation summaries.
-    </p>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="portal-stat-card">
-            <h6>Total Departments</h6>
-            <h3>{{ total_departments }}</h3>
-        </div>
+<div class="admin-dashboard">
+    <div class="page-header">
+        <h2 class="fw-bold mb-1">Admin / Dean / Function Head Dashboard</h2>
+        <p class="text-muted mb-0">System-wide student risk, department performance, and grade submission monitoring.</p>
     </div>
 
-    <div class="col-md-3">
-        <div class="portal-stat-card">
-            <h6>Total Faculty</h6>
-            <h3>{{ total_faculty }}</h3>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="portal-stat-card">
-            <h6>At-Risk Students</h6>
-            <h3>{{ at_risk_students_count }}</h3>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="portal-stat-card">
-            <h6>Evaluation Average</h6>
-            <h3>
-                {% if overall_evaluation_average %}
-                    {{ overall_evaluation_average|floatformat:2 }}
-                {% else %}
-                    0.00
-                {% endif %}
-            </h3>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-lg-8">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Department Performance</h5>
-            <canvas id="departmentPerformanceChart" height="110"></canvas>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Quick Access</h5>
-
-            <div class="d-grid gap-2">
-                <a href="{% url 'evaluation-summary' %}" class="btn btn-primary">Evaluation Summary</a>
-                <a href="{% url 'evaluation-input' %}" class="btn btn-outline-primary">Evaluation Input</a>
-                <a href="{% url 'forms-repository' %}" class="btn btn-warning">Forms</a>
-                <a href="{% url 'reports-index' %}" class="btn btn-outline-secondary">Reports</a>
-                <a href="{% url 'unified-access' %}" class="btn btn-outline-primary">Unified Access</a>
+    <div class="row g-3 mb-3 summary-grid">
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">Total Students</h6>
+                    <h3 class="metric-value mb-0">{{ total_students_system }}</h3>
+                    <p class="text-muted metric-subtext mb-0 mt-2">{{ total_departments }} department{{ total_departments|pluralize }}</p>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Grade Distribution</h5>
-            <canvas id="gradeDistributionChart" height="160"></canvas>
-        </div>
-    </div>
-
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Average Attendance by Department</h5>
-            <canvas id="attendanceTrendChart" height="160"></canvas>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-lg-4">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Pass / Fail Summary</h5>
-            <canvas id="passFailChart" height="180"></canvas>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">At-Risk Students Count</h5>
-            <canvas id="riskChart" height="180"></canvas>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Faculty Submission Progress</h5>
-            <div style="height: 360px;">
-                <canvas id="facultyProgressChart"></canvas>
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-success">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">Low Risk</h6>
+                    <h3 class="metric-value mb-0 text-success">{{ total_low_risk }}</h3>
+                    <span class="badge bg-success mt-2">Low Risk</span>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Department Performance Table</h5>
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">Moderate Risk</h6>
+                    <h3 class="metric-value mb-0 text-warning">{{ total_moderate_risk }}</h3>
+                    <span class="badge bg-warning text-dark mt-2">Moderate Risk</span>
+                </div>
+            </div>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Department</th>
-                            <th>Students</th>
-                            <th>Avg Final Grade</th>
-                            <th>Avg Attendance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in department_performance %}
-                        <tr>
-                            <td>{{ item.enrollment__class_section__subject__department__code }}</td>
-                            <td>{{ item.total_students }}</td>
-                            <td>
-                                {% if item.avg_final_grade %}
-                                    {{ item.avg_final_grade|floatformat:2 }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.avg_attendance %}
-                                    {{ item.avg_attendance|floatformat:2 }}%
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">No department performance data available.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">High Risk</h6>
+                    <h3 class="metric-value mb-0 text-danger">{{ total_high_risk }}</h3>
+                    <span class="badge bg-danger mt-2">High Risk</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Faculty Encoding Progress</h5>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Faculty</th>
-                            <th>Department</th>
-                            <th>Encoded</th>
-                            <th>Total</th>
-                            <th>Progress</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in faculty_progress %}
-                        <tr>
-                            <td>{{ row.faculty.user.get_full_name }}</td>
-                            <td>
-                                {% if row.faculty.department %}
-                                    {{ row.faculty.department.code }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>{{ row.graded_records }}</td>
-                            <td>{{ row.total_records }}</td>
-                            <td>{{ row.progress_percent }}%</td>
-                            <td>
-                                {% if row.progress_status == "Complete" %}
-                                    <span class="badge bg-success">Complete</span>
-                                {% elif row.progress_status == "In Progress" %}
-                                    <span class="badge bg-warning">In Progress</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Not Started</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">No faculty progress data available.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="row g-3 mb-4 summary-grid">
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-{{ overall_department_health_badge_class }}">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">Department Health</h6>
+                    <h3 class="metric-value mb-0">
+                        {% if overall_department_health_score != None %}
+                            {{ overall_department_health_score|floatformat:2 }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </h3>
+                    <span class="badge bg-{{ overall_department_health_badge_class }}{% if overall_department_health_badge_class == 'warning' %} text-dark{% endif %} mt-2">
+                        {{ overall_department_health_status }}
+                    </span>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">Evaluation Summary</h5>
-
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Faculty</th>
-                            <th>Dept</th>
-                            <th>Avg Score</th>
-                            <th>Total Eval</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in evaluation_summary %}
-                        <tr>
-                            <td>{{ item.faculty__user__first_name }} {{ item.faculty__user__last_name }}</td>
-                            <td>{{ item.faculty__department__code }}</td>
-                            <td>{{ item.average_score|floatformat:2 }}</td>
-                            <td>{{ item.total_evaluations }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">No evaluation summary data available.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="col-sm-6 col-md-6 col-lg-3 col-xl-2">
+            <div class="card dashboard-card summary-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted metric-label">Faculty Submission</h6>
+                    <h3 class="metric-value mb-2">{{ admin_submission_progress_percent }}%</h3>
+                    <div class="progress" style="height: 8px;">
+                        <div
+                            class="progress-bar"
+                            role="progressbar"
+                            style="width: {{ admin_submission_progress_percent }}%;"
+                            aria-valuenow="{{ admin_submission_progress_percent }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    <p class="text-muted metric-subtext mb-0 mt-2">
+                        {{ total_encoded_grade_records }} of {{ total_expected_grade_records }} encoded
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-6">
-        <div class="section-box">
-            <h5 class="fw-bold mb-3">At-Risk Students Preview</h5>
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card dashboard-card chart-card compact-chart-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Grade and Attendance by Department</h5>
+                    <div class="compact-chart-container chart-container-compact">
+                        <canvas id="departmentAnalyticsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Department</th>
-                            <th>Subject</th>
-                            <th>Risk</th>
-                        </tr>
-                    </thead>
-                        <tbody>
-                            {% for row in at_risk_students_preview %}
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6 col-md-12">
+            <div class="card dashboard-card compact-info-card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Risk Cause Summary</h5>
+                    <div class="compact-donut-container">
+                        <canvas id="riskCauseChart"></canvas>
+                    </div>
+                    <p class="small text-muted mb-0 mt-3">Most common: {{ most_common_risk_cause }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <div class="card dashboard-card insight-card compact-info-card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Administrative Insight</h5>
+                    <p class="mb-3">{{ admin_dashboard_insight }}</p>
+                    <div class="alert alert-primary recommended-action-box mb-0">
+                        <h6 class="fw-bold mb-1">Recommended Action</h6>
+                        <p class="mb-0 small">{{ admin_recommended_action }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Department Risk Ranking</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle wide-table compact-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ row.student.user.get_full_name }}</td>
-                                        <td>
-                                            {% if row.department %}
-                                            {{ row.department.code }}
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ row.subject.code }}</td>
-                                        <td>
-                                            {% if row.risk_level == "High Risk" %}
-                                            <span class="badge bg-danger">High Risk</span>
-                                            {% else %}
-                                            <span class="badge bg-warning">Moderate Risk</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
+                                    <th>Rank</th>
+                                    <th>Department</th>
+                                    <th>Students</th>
+                                    <th>Low</th>
+                                    <th>Moderate</th>
+                                    <th>High</th>
+                                    <th>Avg Grade</th>
+                                    <th>Avg Attendance</th>
+                                    <th>Summary</th>
+                                    <th class="action-col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in department_risk_ranking %}
                                 <tr>
-                                    <td colspan="4" class="small text-muted">
-                                        {{ row.reason }}
-                                        {% if row.grade %}
-                                        | Grade: {{ row.grade.final_grade }}
+                                    <td class="fw-bold">#{{ row.rank }}</td>
+                                    <td class="subject-col">{{ row.department_code }}<br><span class="small text-muted">{{ row.department_name }}</span></td>
+                                    <td>{{ row.total_students }}</td>
+                                    <td><span class="badge bg-success">{{ row.low_risk_count }}</span></td>
+                                    <td><span class="badge bg-warning text-dark">{{ row.moderate_risk_count }}</span></td>
+                                    <td><span class="badge bg-danger">{{ row.high_risk_count }}</span></td>
+                                    <td>
+                                        {% if row.average_grade != None %}
+                                            {{ row.average_grade|floatformat:2 }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
                                         {% endif %}
-                                        {% if row.attendance %}
-                                        | Attendance: {{ row.attendance.attendance_percent }}%
+                                    </td>
+                                    <td>
+                                        {% if row.average_attendance != None %}
+                                            {{ row.average_attendance|floatformat:2 }}%
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ row.risk_badge }}{% if row.risk_badge == 'warning' %} text-dark{% endif %}">
+                                            {{ row.risk_level_summary }}
+                                        </span>
+                                    </td>
+                                    <td class="small action-col">{{ row.recommended_action }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted">No department risk data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Department Health Score</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle medium-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Avg Grade</th>
+                                    <th>Avg Attendance</th>
+                                    <th>Submission</th>
+                                    <th>Health</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in department_health_scores %}
+                                <tr>
+                                    <td>{{ row.department_code }}</td>
+                                    <td>
+                                        {% if row.average_grade != None %}
+                                            {{ row.average_grade|floatformat:2 }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.average_attendance != None %}
+                                            {{ row.average_attendance|floatformat:2 }}%
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.faculty_submission_progress != None %}
+                                            {{ row.faculty_submission_progress|floatformat:2 }}%
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.department_health_score != None %}
+                                            {{ row.department_health_score|floatformat:2 }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ row.badge }}{% if row.badge == 'warning' %} text-dark{% endif %}">
+                                            {{ row.status }}
+                                        </span>
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">No at-risk students detected.</td>
+                                    <td colspan="6" class="text-center text-muted">No department health data available.</td>
                                 </tr>
                                 {% endfor %}
-                        </tbody>
-                </table>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card dashboard-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Top 5 Sections Needing Attention</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle wide-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Section / Class</th>
+                                    <th class="subject-col">Subject</th>
+                                    <th>Dept</th>
+                                    <th>Faculty</th>
+                                    <th>Students</th>
+                                    <th>High</th>
+                                    <th>Moderate</th>
+                                    <th>Avg Grade</th>
+                                    <th>Avg Attendance</th>
+                                    <th>Health</th>
+                                    <th>Main Concern</th>
+                                    <th class="action-col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in top_sections_needing_attention %}
+                                <tr>
+                                    <td class="fw-bold">#{{ row.rank }}</td>
+                                    <td>{{ row.section_name }}</td>
+                                    <td class="subject-col">{{ row.subject_code }}<br><span class="small text-muted">{{ row.subject_title }}</span></td>
+                                    <td>{{ row.department_code }}</td>
+                                    <td>{{ row.faculty_name }}</td>
+                                    <td>{{ row.total_students }}</td>
+                                    <td><span class="badge bg-danger">{{ row.high_risk_count }}</span></td>
+                                    <td><span class="badge bg-warning text-dark">{{ row.moderate_risk_count }}</span></td>
+                                    <td>
+                                        {% if row.average_grade != None %}
+                                            {{ row.average_grade|floatformat:2 }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.average_attendance != None %}
+                                            {{ row.average_attendance|floatformat:2 }}%
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.class_health_score != None %}
+                                            {{ row.class_health_score|floatformat:2 }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-{{ row.badge }}{% if row.badge == 'warning' %} text-dark{% endif %}">{{ row.main_concern }}</span></td>
+                                    <td class="small action-col">{{ row.recommended_action }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="13" class="text-center text-muted">No class sections found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card dashboard-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">At-Risk Student List</h5>
+                    <div class="table-responsive scrollable-risk-table">
+                        <table class="table table-sm table-hover align-middle wide-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Dept</th>
+                                    <th class="subject-col">Class / Subject</th>
+                                    <th>Grade</th>
+                                    <th>Attendance</th>
+                                    <th>Status</th>
+                                    <th class="reason-col">Reason</th>
+                                    <th class="action-col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in admin_at_risk_students %}
+                                <tr>
+                                    <td>{{ row.student_name }}</td>
+                                    <td>{{ row.department_code }}</td>
+                                    <td class="subject-col">{{ row.class_subject }}</td>
+                                    <td>
+                                        {% if row.has_grade %}
+                                            {{ row.final_grade|floatformat:2 }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.has_attendance %}
+                                            {{ row.attendance_percent|floatformat:2 }}%
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-{{ row.risk_badge }}{% if row.risk_badge == 'warning' %} text-dark{% endif %}">{{ row.risk_status }}</span></td>
+                                    <td class="small text-muted reason-col">{{ row.reason }}</td>
+                                    <td class="small action-col">{{ row.recommended_action }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No high-risk or moderate-risk students detected.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card dashboard-card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Faculty Submission Progress</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle medium-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Faculty</th>
+                                    <th>Dept</th>
+                                    <th>Expected</th>
+                                    <th>Encoded</th>
+                                    <th>Pending</th>
+                                    <th>Completion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in faculty_submission_progress %}
+                                <tr>
+                                    <td class="subject-col">{{ row.faculty_name }}</td>
+                                    <td>{{ row.department_code }}</td>
+                                    <td>{{ row.expected_grade_records }}</td>
+                                    <td>{{ row.encoded_grade_records }}</td>
+                                    <td>{{ row.pending_records }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ row.completion_badge }}{% if row.completion_badge == 'warning' %} text-dark{% endif %}">
+                                            {{ row.completion_percent }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No faculty submission data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card dashboard-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Exportable Analytics Reports</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">Print Dashboard Summary</button>
+                        <a class="btn btn-outline-danger btn-sm" href="{{ export_at_risk_url }}">Export At-Risk Student Report</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ export_faculty_submission_url }}">Export Faculty Submission Report</a>
+                        <a class="btn btn-outline-success btn-sm" href="{{ export_department_risk_url }}">Export Department Risk Ranking</a>
+                        <a class="btn btn-outline-warning btn-sm" href="{{ export_top_sections_url }}">Export Top Sections Needing Attention</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+{{ department_chart_labels|json_script:"admin-department-chart-labels" }}
+{{ department_grade_averages|json_script:"admin-department-grade-averages" }}
+{{ department_attendance_averages|json_script:"admin-department-attendance-averages" }}
+{{ risk_cause_labels|json_script:"admin-risk-cause-labels" }}
+{{ risk_cause_data|json_script:"admin-risk-cause-data" }}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    const departmentChartLabels = {{ department_chart_labels|safe }};
-    const departmentChartValues = {{ department_chart_values|safe }};
+    const departmentLabels = JSON.parse(document.getElementById('admin-department-chart-labels').textContent);
+    const departmentGradeAverages = JSON.parse(document.getElementById('admin-department-grade-averages').textContent);
+    const departmentAttendanceAverages = JSON.parse(document.getElementById('admin-department-attendance-averages').textContent);
+    const riskCauseLabels = JSON.parse(document.getElementById('admin-risk-cause-labels').textContent);
+    const riskCauseData = JSON.parse(document.getElementById('admin-risk-cause-data').textContent);
 
-    const gradeDistributionLabels = {{ grade_distribution_labels|safe }};
-    const gradeDistributionValues = {{ grade_distribution_values|safe }};
+    const departmentChart = document.getElementById('departmentAnalyticsChart');
+    const riskCauseChart = document.getElementById('riskCauseChart');
 
-    const attendanceTrendLabels = {{ attendance_trend_labels|safe }};
-    const attendanceTrendValues = {{ attendance_trend_values|safe }};
-
-    const passFailLabels = {{ pass_fail_labels|safe }};
-    const passFailValues = {{ pass_fail_values|safe }};
-
-    const riskLabels = {{ at_risk_labels|safe }};
-    const riskValues = {{ at_risk_values|safe }};
-
-    const facultyProgressLabels = {{ faculty_progress_labels|safe }};
-    const facultyProgressValues = {{ faculty_progress_values|safe }};
-
-    function createBarChart(canvasId, labels, values, labelText, suggestedMax = 100) {
-        const ctx = document.getElementById(canvasId);
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: labelText,
-                        data: values,
+    if (departmentChart) {
+        new Chart(departmentChart, {
+            type: 'bar',
+            data: {
+                labels: departmentLabels,
+                datasets: [
+                    {
+                        label: 'Average Final Grade',
+                        data: departmentGradeAverages,
+                        backgroundColor: 'rgba(13, 110, 253, 0.65)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
                         borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            suggestedMax: suggestedMax
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function createHorizontalBarChart(canvasId, labels, values, labelText) {
-    const ctx = document.getElementById(canvasId);
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: labelText,
-                        data: values,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            suggestedMax: 100
-                        },
-                        y: {
-                            ticks: {
-                                autoSkip: false,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        }
                     },
-                    plugins: {
-                        legend: {
-                            display: true
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function createLineChart(canvasId, labels, values, labelText) {
-        const ctx = document.getElementById(canvasId);
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: labelText,
-                        data: values,
-                        borderWidth: 2,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            suggestedMax: 100
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function createDoughnutChart(canvasId, labels, values) {
-        const ctx = document.getElementById(canvasId);
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
+                    {
+                        label: 'Average Attendance',
+                        data: departmentAttendanceAverages,
+                        backgroundColor: 'rgba(25, 135, 84, 0.65)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
                         borderWidth: 1
-                    }]
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
                 },
-                options: {
-                    responsive: true
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100
+                    }
                 }
-            });
-        }
+            }
+        });
     }
 
-    createBarChart(
-        'departmentPerformanceChart',
-        departmentChartLabels,
-        departmentChartValues,
-        'Average Final Grade'
-    );
+    if (riskCauseChart) {
+        const hasRiskCauseData = riskCauseData.some((value) => Number(value) > 0);
 
-    createBarChart(
-        'gradeDistributionChart',
-        gradeDistributionLabels,
-        gradeDistributionValues,
-        'Number of Grade Records',
-        30
-    );
-
-    createLineChart(
-        'attendanceTrendChart',
-        attendanceTrendLabels,
-        attendanceTrendValues,
-        'Average Attendance'
-    );
-
-    createDoughnutChart(
-        'passFailChart',
-        passFailLabels,
-        passFailValues
-    );
-
-    createDoughnutChart(
-        'riskChart',
-        riskLabels,
-        riskValues
-    );
-
-    createHorizontalBarChart(
-        'facultyProgressChart',
-        facultyProgressLabels,
-        facultyProgressValues,
-        'Submission Progress %'
-    );
+        new Chart(riskCauseChart, {
+            type: 'doughnut',
+            data: {
+                labels: hasRiskCauseData ? riskCauseLabels : ['No Data'],
+                datasets: [
+                    {
+                        data: hasRiskCauseData ? riskCauseData : [1],
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.85)',
+                            'rgba(111, 66, 193, 0.8)',
+                            'rgba(253, 126, 20, 0.8)',
+                            'rgba(13, 202, 240, 0.8)',
+                            'rgba(108, 117, 125, 0.8)'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
 </script>
 {% endblock %}
